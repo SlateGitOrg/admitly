@@ -1,0 +1,24 @@
+[
+  {
+    "op": "add",
+    "path": "/spec/jobTemplate/spec/template/spec/securityContext",
+    "value": {
+      "runAsNonRoot": true,
+      "seccompProfile": {
+        "type": "RuntimeDefault"
+      }
+    }
+  },
+  {
+    "op": "add",
+    "path": "/spec/jobTemplate/spec/template/spec/containers/0/securityContext",
+    "value": {
+      "allowPrivilegeEscalation": false,
+      "capabilities": {
+        "drop": [
+          "ALL"
+        ]
+      }
+    }
+  }
+]

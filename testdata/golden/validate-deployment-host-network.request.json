@@ -1,0 +1,85 @@
+{
+  "apiVersion": "admission.k8s.io/v1",
+  "kind": "AdmissionReview",
+  "request": {
+    "dryRun": false,
+    "kind": {
+      "group": "apps",
+      "kind": "Deployment",
+      "version": "v1"
+    },
+    "name": "edge",
+    "namespace": "shop",
+    "object": {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "labels": {
+          "app.kubernetes.io/name": "edge",
+          "team": "net"
+        },
+        "name": "edge",
+        "namespace": "shop"
+      },
+      "spec": {
+        "replicas": 2,
+        "selector": {
+          "matchLabels": {
+            "app": "edge"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "edge"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "image": "registry.lab.local/team/web@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "name": "proxy",
+                "resources": {
+                  "limits": {
+                    "cpu": "500m",
+                    "memory": "256Mi"
+                  }
+                }
+              }
+            ],
+            "hostNetwork": true
+          }
+        }
+      }
+    },
+    "oldObject": null,
+    "operation": "CREATE",
+    "options": {
+      "apiVersion": "meta.k8s.io/v1",
+      "kind": "CreateOptions"
+    },
+    "requestKind": {
+      "group": "apps",
+      "kind": "Deployment",
+      "version": "v1"
+    },
+    "requestResource": {
+      "group": "apps",
+      "resource": "deployments",
+      "version": "v1"
+    },
+    "resource": {
+      "group": "apps",
+      "resource": "deployments",
+      "version": "v1"
+    },
+    "uid": "11111111-0000-0000-0000-000000000007",
+    "userInfo": {
+      "groups": [
+        "dev",
+        "system:authenticated"
+      ],
+      "username": "alice@lab.local"
+    }
+  }
+}

@@ -131,6 +131,8 @@ type Result struct {
 	Ignored    []PolicyError `json:"ignoredErrors,omitempty"`
 	// Patch holds JSON Patch operations (Mutate only).
 	Patch []mutate.Op `json:"patch,omitempty"`
+	// MutatedBy lists the policies that contributed at least one operation.
+	MutatedBy []string `json:"mutatedBy,omitempty"`
 	// Incomplete is set when ctx expired before every policy was evaluated;
 	// the caller must apply its global failure mode.
 	Incomplete bool `json:"incomplete,omitempty"`
@@ -235,6 +237,7 @@ func (e *Engine) evalPolicy(ctx context.Context, cp *compiledPolicy, in *Input, 
 		res.Violations = append(res.Violations, violations...)
 	} else if len(res.Patch) > patchLen {
 		outcome = OutcomeMutated
+		res.MutatedBy = append(res.MutatedBy, cp.name())
 	}
 }
 

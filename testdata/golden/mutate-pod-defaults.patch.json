@@ -1,0 +1,36 @@
+[
+  {
+    "op": "add",
+    "path": "/spec/securityContext",
+    "value": {
+      "runAsNonRoot": true,
+      "seccompProfile": {
+        "type": "RuntimeDefault"
+      }
+    }
+  },
+  {
+    "op": "add",
+    "path": "/spec/initContainers/0/securityContext",
+    "value": {
+      "allowPrivilegeEscalation": false,
+      "capabilities": {
+        "drop": [
+          "ALL"
+        ]
+      }
+    }
+  },
+  {
+    "op": "add",
+    "path": "/spec/containers/0/securityContext",
+    "value": {
+      "allowPrivilegeEscalation": false,
+      "capabilities": {
+        "drop": [
+          "ALL"
+        ]
+      }
+    }
+  }
+]

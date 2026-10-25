@@ -1,0 +1,64 @@
+{
+  "apiVersion": "admission.k8s.io/v1",
+  "kind": "AdmissionReview",
+  "request": {
+    "dryRun": false,
+    "kind": {
+      "group": "",
+      "kind": "Pod",
+      "version": "v1"
+    },
+    "name": "kube-proxy",
+    "namespace": "kube-system",
+    "object": {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "labels": {},
+        "name": "kube-proxy",
+        "namespace": "kube-system"
+      },
+      "spec": {
+        "containers": [
+          {
+            "image": "registry.k8s.io/kube-proxy:v1.37.0",
+            "name": "proxy",
+            "securityContext": {
+              "privileged": true
+            }
+          }
+        ],
+        "hostNetwork": true
+      }
+    },
+    "oldObject": null,
+    "operation": "CREATE",
+    "options": {
+      "apiVersion": "meta.k8s.io/v1",
+      "kind": "CreateOptions"
+    },
+    "requestKind": {
+      "group": "",
+      "kind": "Pod",
+      "version": "v1"
+    },
+    "requestResource": {
+      "group": "",
+      "resource": "pods",
+      "version": "v1"
+    },
+    "resource": {
+      "group": "",
+      "resource": "pods",
+      "version": "v1"
+    },
+    "uid": "11111111-0000-0000-0000-000000000009",
+    "userInfo": {
+      "groups": [
+        "dev",
+        "system:authenticated"
+      ],
+      "username": "alice@lab.local"
+    }
+  }
+}

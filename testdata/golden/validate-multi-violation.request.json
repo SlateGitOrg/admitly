@@ -1,0 +1,72 @@
+{
+  "apiVersion": "admission.k8s.io/v1",
+  "kind": "AdmissionReview",
+  "request": {
+    "dryRun": false,
+    "kind": {
+      "group": "",
+      "kind": "Pod",
+      "version": "v1"
+    },
+    "name": "shady",
+    "namespace": "shop",
+    "object": {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "labels": {
+          "app.kubernetes.io/name": "shady"
+        },
+        "name": "shady",
+        "namespace": "shop"
+      },
+      "spec": {
+        "containers": [
+          {
+            "image": "docker.io/library/nginx:1.27",
+            "name": "app"
+          },
+          {
+            "image": "ghcr.io/acme/proxy@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "name": "sidecar",
+            "resources": {
+              "limits": {
+                "cpu": "500m",
+                "memory": "256Mi"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "oldObject": null,
+    "operation": "CREATE",
+    "options": {
+      "apiVersion": "meta.k8s.io/v1",
+      "kind": "CreateOptions"
+    },
+    "requestKind": {
+      "group": "",
+      "kind": "Pod",
+      "version": "v1"
+    },
+    "requestResource": {
+      "group": "",
+      "resource": "pods",
+      "version": "v1"
+    },
+    "resource": {
+      "group": "",
+      "resource": "pods",
+      "version": "v1"
+    },
+    "uid": "11111111-0000-0000-0000-000000000003",
+    "userInfo": {
+      "groups": [
+        "dev",
+        "system:authenticated"
+      ],
+      "username": "alice@lab.local"
+    }
+  }
+}

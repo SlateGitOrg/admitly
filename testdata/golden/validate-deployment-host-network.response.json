@@ -1,0 +1,15 @@
+{
+  "apiVersion": "admission.k8s.io/v1",
+  "kind": "AdmissionReview",
+  "response": {
+    "allowed": false,
+    "status": {
+      "code": 403,
+      "message": "admitly denied the request: [disallow-privileged] sharing host namespaces is not allowed: hostNetwork",
+      "metadata": {},
+      "reason": "Forbidden",
+      "status": "Failure"
+    },
+    "uid": "11111111-0000-0000-0000-000000000007"
+  }
+}

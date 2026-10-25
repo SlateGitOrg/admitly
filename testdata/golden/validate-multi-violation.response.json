@@ -1,0 +1,15 @@
+{
+  "apiVersion": "admission.k8s.io/v1",
+  "kind": "AdmissionReview",
+  "response": {
+    "allowed": false,
+    "status": {
+      "code": 403,
+      "message": "admitly denied the request: [registry-allowlist] images from unapproved registries: docker.io/library/nginx:1.27, ghcr.io/acme/proxy@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb; [require-image-digest] images must be pinned by digest: docker.io/library/nginx:1.27; [require-labels] missing required labels: team; [require-resource-limits] containers must set cpu and memory limits: app",
+      "metadata": {},
+      "reason": "Forbidden",
+      "status": "Failure"
+    },
+    "uid": "11111111-0000-0000-0000-000000000003"
+  }
+}

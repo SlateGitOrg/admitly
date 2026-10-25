@@ -1,0 +1,21 @@
+[
+  {
+    "op": "add",
+    "path": "/spec/securityContext",
+    "value": {
+      "runAsNonRoot": true,
+      "seccompProfile": {
+        "type": "RuntimeDefault"
+      }
+    }
+  },
+  {
+    "op": "add",
+    "path": "/spec/containers/0/securityContext/capabilities",
+    "value": {
+      "drop": [
+        "ALL"
+      ]
+    }
+  }
+]

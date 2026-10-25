@@ -1,0 +1,13 @@
+{
+  "apiVersion": "admission.k8s.io/v1",
+  "kind": "AdmissionReview",
+  "response": {
+    "allowed": true,
+    "auditAnnotations": {
+      "mutated-by": "default-security-context"
+    },
+    "patch": "W3sib3AiOiJhZGQiLCJwYXRoIjoiL3NwZWMvc2VjdXJpdHlDb250ZXh0L3NlY2NvbXBQcm9maWxlIiwidmFsdWUiOnsidHlwZSI6IlJ1bnRpbWVEZWZhdWx0In19LHsib3AiOiJhZGQiLCJwYXRoIjoiL3NwZWMvY29udGFpbmVycy8wL3NlY3VyaXR5Q29udGV4dC9jYXBhYmlsaXRpZXMiLCJ2YWx1ZSI6eyJkcm9wIjpbIkFMTCJdfX1d",
+    "patchType": "JSONPatch",
+    "uid": "22222222-0000-0000-0000-000000000002"
+  }
+}

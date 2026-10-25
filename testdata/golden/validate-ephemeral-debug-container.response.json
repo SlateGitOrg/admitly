@@ -1,0 +1,15 @@
+{
+  "apiVersion": "admission.k8s.io/v1",
+  "kind": "AdmissionReview",
+  "response": {
+    "allowed": false,
+    "status": {
+      "code": 403,
+      "message": "admitly denied the request: [disallow-privileged] privileged containers are not allowed: debugger; [registry-allowlist] images from unapproved registries: docker.io/library/busybox:1.36; [require-image-digest] images must be pinned by digest: docker.io/library/busybox:1.36",
+      "metadata": {},
+      "reason": "Forbidden",
+      "status": "Failure"
+    },
+    "uid": "11111111-0000-0000-0000-000000000008"
+  }
+}

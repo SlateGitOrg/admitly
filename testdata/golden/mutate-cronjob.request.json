@@ -1,0 +1,79 @@
+{
+  "apiVersion": "admission.k8s.io/v1",
+  "kind": "AdmissionReview",
+  "request": {
+    "dryRun": false,
+    "kind": {
+      "group": "batch",
+      "kind": "CronJob",
+      "version": "v1"
+    },
+    "name": "report",
+    "namespace": "shop",
+    "object": {
+      "apiVersion": "batch/v1",
+      "kind": "CronJob",
+      "metadata": {
+        "labels": {
+          "app.kubernetes.io/name": "report",
+          "team": "bi"
+        },
+        "name": "report",
+        "namespace": "shop"
+      },
+      "spec": {
+        "jobTemplate": {
+          "spec": {
+            "template": {
+              "spec": {
+                "containers": [
+                  {
+                    "image": "registry.lab.local/team/web@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "name": "job",
+                    "resources": {
+                      "limits": {
+                        "cpu": "500m",
+                        "memory": "256Mi"
+                      }
+                    }
+                  }
+                ],
+                "restartPolicy": "OnFailure"
+              }
+            }
+          }
+        },
+        "schedule": "0 3 * * *"
+      }
+    },
+    "oldObject": null,
+    "operation": "CREATE",
+    "options": {
+      "apiVersion": "meta.k8s.io/v1",
+      "kind": "CreateOptions"
+    },
+    "requestKind": {
+      "group": "batch",
+      "kind": "CronJob",
+      "version": "v1"
+    },
+    "requestResource": {
+      "group": "batch",
+      "resource": "cronjobs",
+      "version": "v1"
+    },
+    "resource": {
+      "group": "batch",
+      "resource": "cronjobs",
+      "version": "v1"
+    },
+    "uid": "22222222-0000-0000-0000-000000000005",
+    "userInfo": {
+      "groups": [
+        "dev",
+        "system:authenticated"
+      ],
+      "username": "alice@lab.local"
+    }
+  }
+}
