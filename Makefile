@@ -63,9 +63,10 @@ bench: build ## latency benchmarks: Go micro-benchmarks + end-to-end TLS loopbac
 	$(GO) test -run '^$$' -bench Comprehension -benchtime 5x ./internal/celenv/
 	./bin/admitly bench --requests 5000 --concurrency 8 --warmup 500
 
-fuzz: ## short fuzzing session for the image reference parser and HTTP handler
+fuzz: ## short fuzzing session for the image reference parser, HTTP handler and quantity functions
 	$(GO) test -run '^$$' -fuzz FuzzParse -fuzztime 30s ./internal/imageref/
 	$(GO) test -run '^$$' -fuzz FuzzValidateHandler -fuzztime 30s ./internal/server/
+	$(GO) test -run '^$$' -fuzz FuzzQuantity -fuzztime 30s ./internal/celenv/
 
 golden: ## regenerate golden AdmissionReview responses (review the diff!)
 	$(GO) test ./internal/server/ -run Golden -update

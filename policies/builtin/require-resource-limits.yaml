@@ -1,6 +1,7 @@
 # Containers without limits can starve their neighbours; maxMemory caps a
-# single container's memory limit. quantityCompare is exact for any size
-# (quantityMilli would overflow int64 for limits above ~8Pi).
+# single container's memory limit. quantityCompare never overflows: it is
+# exact up to 10^1000 and treats larger values (e.g. "1e100000000") as
+# +infinity (quantityMilli would overflow int64 for limits above ~8Pi).
 apiVersion: admitly.dev/v1alpha1
 kind: ValidationPolicy
 metadata:

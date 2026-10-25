@@ -3,9 +3,13 @@ package celenv
 import (
 	"context"
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/google/cel-go/common/types"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 func newEnv(t *testing.T, limit uint64) *Env {
@@ -187,6 +191,128 @@ func TestQuantityHugeValues(t *testing.T) {
 	}
 }
 
+// TestQuantityHugeExponents pins the fix for a CPU/memory exhaustion: a
+// quantity such as "1e100000000" parses instantly, but comparing it, scaling
+// it to milli-units, or (for "1e-100000000") even parsing it builds a
+// ~10^100000000 big integer inside one native call, which neither the CEL cost
+// limit nor the evaluation deadline can interrupt. Every case must finish in
+// milliseconds.
+func TestQuantityHugeExponents(t *testing.T) {
+	e := newEnv(t, 0)
+	ok := []string{
+		`quantityCompare("1e100000000", "4Gi") == 1`,
+		`quantityCompare("4Gi", "1e100000000") == -1`,
+		`quantityCompare("-1e100000000", "4Gi") == -1`,
+		`quantityCompare("1E2147483647", "-1E2147483647") == 1`,
+		`quantityCompare("1e100000000", "1e100000001") == 0`, // both saturate to +infinity
+		`quantityCompare("1e-100000000", "1n") == 0`,         // ParseQuantity rounds up to 1n
+		`quantityCompare("1e-100000000", 0) == 1`,
+		`quantityCompare("-1e-100000000", 0) == -1`,
+		`quantityCompare("0e100000000", 0) == 0`,
+		`quantityCompare("-0.000e-2147483648", "0") == 0`,
+		`quantityCompare("1e4294967297", 10) == 0`, // exponent truncated to int32, as ParseQuantity does
+		`quantityCompare("1e1000", "9e999") == 1`,  // exact up to the bound
+		`quantityCompare("1e1001", "9.99e1000") == 1`,
+		`quantityCompare("123.45e998", "1e1000") == 1`,
+		// Saturation must keep the order: the largest exactly-parsed value
+		// (magnitude 10^1000) stays below every saturated one.
+		`quantityCompare("1` + strings.Repeat("0", 120) + `e990", "1e1001") == 0`, // both saturate
+		`quantityCompare("1` + strings.Repeat("0", 120) + `e990", "1e1000") == 1`,
+		`quantityCompare("9.999e1000", "1e1001") == -1`,
+		`quantityCompare("-9.999e1000", "-1e1001") == 1`,
+		`quantityCompare("0.` + strings.Repeat("0", 110) + `1e-900", "1n") == 0`,
+		`quantityCompare("0.` + strings.Repeat("0", 100) + `1e110", "1G") == 0`,
+		`quantityMilli("1e-100000000") == 1`,
+		`quantityMilli("-1e-100000000") == -1`,
+		`quantityMilli("0e100000000") == 0`,
+		`quantityMilli("1e-6") == 1`,
+		`quantityMilli("4.5e3") == 4500000`,
+	}
+	bad := []string{
+		`quantityMilli("1e100000000") > 0`,
+		`quantityMilli("-1e100000000") < 0`,
+		`quantityMilli("1e1000") > 0`,
+		`quantityCompare("` + strings.Repeat("1", 200) + `", "1") == 1`,
+		`quantityCompare("1", "` + strings.Repeat("0", 129) + `") == 1`,
+		`quantityCompare("1e99999999999999999999", "1") == 1`, // exponent not an int64: ParseQuantity rejects it
+	}
+	run := func(src string) (bool, error) {
+		p, err := e.Compile(src, BoolType)
+		if err != nil {
+			t.Fatalf("Compile(%q): %v", src, err)
+		}
+		type res struct {
+			b   bool
+			err error
+		}
+		ch := make(chan res, 1)
+		start := time.Now()
+		go func() {
+			b, err := p.EvalBool(context.Background(), baseActivation())
+			ch <- res{b, err}
+		}()
+		select {
+		case r := <-ch:
+			if d := time.Since(start); d > 500*time.Millisecond {
+				t.Errorf("Eval(%q) took %v, want milliseconds", src, d)
+			}
+			return r.b, r.err
+		case <-time.After(5 * time.Second):
+			t.Fatalf("Eval(%q) still running after 5s (unbounded big-number work)", src)
+			return false, nil
+		}
+	}
+	for _, src := range ok {
+		if got, err := run(src); err != nil || !got {
+			t.Errorf("Eval(%q) = %v, %v; want true", src, got, err)
+		}
+	}
+	for _, src := range bad {
+		if got, err := run(src); err == nil {
+			t.Errorf("Eval(%q) = %v, want error", src, got)
+		}
+	}
+}
+
+// TestParseQuantityMatchesKubernetes checks parseQuantity against
+// resource.ParseQuantity around the saturation bound, at exponents that are
+// still cheap for ParseQuantity: identical values inside the bound and for
+// tiny values, +/-infinity only for values above 10^1000.
+func TestParseQuantityMatchesKubernetes(t *testing.T) {
+	limit := resource.MustParse("1e1001")
+	for _, m := range []string{"1", "-1", "+9.99", "0.5", "-123.456", "0.0001", "-0.000700", "0", "-0.0", ".5", "7."} {
+		for _, exp := range []int{-1300, -1001, -1000, -999, -12, -9, 0, 5, 997, 998, 999, 1000, 1001, 1003, 1300} {
+			for _, e := range []string{"e", "E", "e+"} {
+				if e == "e+" && exp < 0 {
+					continue
+				}
+				s := m + e + strconv.Itoa(exp)
+				want, err := resource.ParseQuantity(s)
+				if err != nil {
+					t.Fatalf("ParseQuantity(%q): %v", s, err)
+				}
+				got, err := parseQuantity(s)
+				if err != nil {
+					t.Fatalf("parseQuantity(%q): %v", s, err)
+				}
+				if got.inf != 0 {
+					abs := want.DeepCopy()
+					if abs.Sign() < 0 {
+						abs.Neg()
+					}
+					if abs.Cmp(limit) < 0 || got.inf != want.Sign() {
+						t.Errorf("parseQuantity(%q) = inf %d, but ParseQuantity = %s", s, got.inf, want.String())
+					}
+					continue
+				}
+				if got.q.Cmp(want) != 0 {
+					t.Errorf("parseQuantity(%q) = %s, ParseQuantity = %s", s, got.q.String(), want.String())
+				}
+			}
+		}
+	}
+}
+
 func TestCostLimit(t *testing.T) {
 	e := newEnv(t, 1000)
 	p, err := e.Compile(`lists.range(5000).all(i, i >= 0)`, BoolType)
@@ -215,4 +341,30 @@ func TestContextCancellation(t *testing.T) {
 	if time.Since(start) > 2*time.Second {
 		t.Fatalf("evaluation was not interrupted promptly: %v", time.Since(start))
 	}
+}
+
+// FuzzQuantity feeds arbitrary strings to quantityCompare and quantityMilli:
+// every call must finish quickly (no unbounded big-number work), and a
+// successfully parsed value must agree with itself.
+func FuzzQuantity(f *testing.F) {
+	for _, s := range []string{"4Gi", "500m", "1e100000000", "1e-100000000", "-0.5E-2147483648", "1e4294967297", "10Pi", "8Ei", ".e9", "1.5e+3k", "0x10"} {
+		f.Add(s)
+	}
+	f.Fuzz(func(t *testing.T, s string) {
+		start := time.Now()
+		_, err := parseQuantity(s)
+		quantityMilli(types.String(s))
+		c := quantityCompare(types.String(s), types.String("4Gi"))
+		if err == nil {
+			if self := quantityCompare(types.String(s), types.String(s)); self != types.IntZero {
+				t.Errorf("quantityCompare(%q, itself) = %v, want 0", s, self)
+			}
+			if _, isErr := c.(*types.Err); isErr {
+				t.Errorf("quantityCompare(%q, 4Gi) = %v after a successful parse", s, c)
+			}
+		}
+		if d := time.Since(start); d > 500*time.Millisecond {
+			t.Errorf("quantity functions on %q took %v", s, d)
+		}
+	})
 }

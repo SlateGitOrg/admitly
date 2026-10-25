@@ -164,6 +164,11 @@ func TestBuiltinValidationMatrix(t *testing.T) {
 		{"over memory 8Ei", admissionv1.Create, strings.Replace(goodPod, "256Mi", "8Ei", 1),
 			map[string]string{"require-resource-limits": "memory limit above 4Gi: app"}},
 		{"memory exactly 4Gi", admissionv1.Create, strings.Replace(goodPod, "256Mi", "4Gi", 1), nil},
+		// Huge exponents must be decided without big-number rescaling
+		// (resource.Quantity.Cmp on "1e100000000" takes tens of seconds).
+		{"over memory 1e100000000", admissionv1.Create, strings.Replace(goodPod, "256Mi", "\"1e100000000\"", 1),
+			map[string]string{"require-resource-limits": "memory limit above 4Gi: app"}},
+		{"tiny memory 1e-100000000", admissionv1.Create, strings.Replace(goodPod, "256Mi", "\"1e-100000000\"", 1), nil},
 		{"bad registry", admissionv1.Create, strings.Replace(goodPod, "registry.lab.local/", "docker.io/", 1),
 			map[string]string{"registry-allowlist": "images from unapproved registries: docker.io/team/web@"}},
 		{"lookalike registry", admissionv1.Create, strings.Replace(goodPod, "registry.lab.local/", "registry.lab.local.evil.io/", 1),
