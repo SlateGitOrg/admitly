@@ -1,0 +1,30 @@
+# admitly server configuration (all fields shown with their defaults unless
+# noted). Relative paths are resolved against this file's directory.
+listen: ":8443"
+tls:
+  certFile: certs/tls.crt          # serving certificate (admitly certs)
+  keyFile: certs/tls.key
+  clientCAFile: ""                 # set to require API-server client certificates (mTLS)
+  reloadInterval: 30s              # certificate files are re-read when they change
+failureMode: Closed                # Closed: deny when evaluation cannot finish; Open: admit with a warning
+timeout: 3s                        # per-review budget (also capped at 80% of the API server's ?timeout=)
+maxRequestBytes: 3145728           # matches the API server's 3 MiB request limit
+policies:
+  builtin: true                    # load the embedded policy library
+  dirs: [policies]                 # extra policy directories (hot-reloaded)
+  reloadInterval: 10s
+  overrides:                       # adjust any policy by name without copying it
+    registry-allowlist:
+      params:
+        allowedImages: ["registry.lab.local/**"]
+    require-labels:
+      mode: Audit
+signatures:
+  storeDir: signatures             # <registry>/<repo>/sha256-<hex>.sig files
+  cacheSize: 1024
+  cacheTTL: 5m                     # positive verification results only
+cel:
+  costLimit: 1000000               # per-expression runtime cost budget
+audit:
+  file: "-"                        # "-" = stdout, "" = disabled, otherwise a file path
+logLevel: info

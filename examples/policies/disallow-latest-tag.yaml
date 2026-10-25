@@ -1,0 +1,22 @@
+# Example custom policy: warn (Audit) about images
+# that use the mutable "latest" tag or no tag at all.
+apiVersion: admitly.dev/v1alpha1
+kind: ValidationPolicy
+metadata:
+  name: disallow-latest-tag
+spec:
+  mode: Audit
+  severity: low
+  match:
+    resources:
+      - apiGroups: [""]
+        kinds: [Pod]
+  variables:
+    - name: floating
+      expression: >-
+        containers.filter(c, parseImage(c.image).tag in ['', 'latest'] && parseImage(c.image).digest == '').map(c, c.name) +
+        containers.filter(c, parseImage(c.image).tag == 'latest' && parseImage(c.image).digest != '').map(c, c.name)
+  validations:
+    - expression: size(variables.floating) == 0
+      messageExpression: >-
+        'containers use the latest tag: ' + variables.floating.join(', ')

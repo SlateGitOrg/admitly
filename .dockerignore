@@ -1,0 +1,4 @@
+bin/
+.demo/
+coverage.out
+.git/

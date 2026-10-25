@@ -1,0 +1,20 @@
+# Require a valid signature from the lab signing key for every image pulled
+# from the lab registry. `make demo` generates cosign.pub next to this file.
+apiVersion: admitly.dev/v1alpha1
+kind: ImageVerificationPolicy
+metadata:
+  name: verify-images
+spec:
+  mode: Enforce
+  severity: critical
+  failurePolicy: Fail
+  match:
+    resources:
+      - apiGroups: [""]
+        kinds: [Pod]
+        subresources: ["", ephemeralcontainers]
+    excludeNamespaces: [kube-system]
+  verification:
+    rules:
+      - images: ["registry.lab.local/**"]
+        keyFiles: [cosign.pub]
