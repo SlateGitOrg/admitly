@@ -2,7 +2,7 @@
 /dist/
 *.test
 *.out
-coverage.*
+/coverage.out
 /.demo/
 /.bench/
 .DS_Store
