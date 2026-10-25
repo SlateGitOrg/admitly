@@ -1,0 +1,9 @@
+/bin/
+/dist/
+*.test
+*.out
+coverage.*
+/.demo/
+/.bench/
+.DS_Store
+.env
