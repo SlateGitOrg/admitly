@@ -91,7 +91,11 @@ evaluated in order, exposed as `variables.<name>`), `failurePolicy`,
 
 Extensions: cel-go optional types (`a.?b.orValue(x)`), strings, sets, lists,
 math; plus `parseImage(s)` (registry, repository, name, tag, digest),
-`s.matchesGlob(pattern)` and `quantityMilli(q)` (Kubernetes quantities).
+`s.matchesGlob(pattern)`, and two Kubernetes-quantity helpers:
+`quantityCompare(a, b)` (-1/0/1, exact via `resource.Quantity.Cmp`, safe for
+any size) and `quantityMilli(q)` (milli-units as int; an evaluation error when
+the value does not fit in int64, e.g. `10Pi`, instead of wrapping negative).
+Limit checks should use `quantityCompare`.
 
 Pod-spec locations are a static table (`internal/engine/input.go`):
 `/spec` (Pod), `/spec/template/spec` (Deployment, StatefulSet, DaemonSet,

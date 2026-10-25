@@ -50,7 +50,7 @@ flowchart LR
   subgraph admitly
     H[webhook: limits, decode,<br/>?timeout= budget] --> AD[admission: decision,<br/>warnings, failure mode]
     AD --> EN[engine: match, matchConditions,<br/>variables, validations]
-    EN --> CEL[CEL env + parseImage,<br/>matchesGlob, quantityMilli]
+    EN --> CEL[CEL env + parseImage,<br/>matchesGlob, quantityCompare,<br/>quantityMilli]
     EN --> MU[mutate: set-if-absent<br/>JSON Patch]
     EN --> SV[signature verifier<br/>+ LRU cache]
     SV --> ST[(signature store)]
