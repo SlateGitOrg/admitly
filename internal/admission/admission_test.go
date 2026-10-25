@@ -9,7 +9,7 @@ import (
 	admissionv1 "k8s.io/api/admission/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/archit2501/admitly/internal/engine"
+	"github.com/SlateGitOrg/admitly/internal/engine"
 )
 
 func TestNewValidation(t *testing.T) {

@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/archit2501/admitly/internal/engine"
+	"github.com/SlateGitOrg/admitly/internal/engine"
 )
 
 // Record is one admission decision.

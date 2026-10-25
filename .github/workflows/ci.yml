@@ -1,6 +1,4 @@
 # Runs the same gates as `make check`, plus the envtest suite and the demo.
-# Note: this workflow has not been executed yet (the repository has not been
-# pushed); it mirrors the commands that were run locally.
 name: CI
 on:
   push:

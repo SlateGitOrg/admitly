@@ -27,11 +27,11 @@ import (
 
 	admissionv1 "k8s.io/api/admission/v1"
 
-	"github.com/archit2501/admitly/internal/config"
-	"github.com/archit2501/admitly/internal/imageref"
-	"github.com/archit2501/admitly/internal/server"
-	"github.com/archit2501/admitly/internal/signature"
-	"github.com/archit2501/admitly/internal/tlsutil"
+	"github.com/SlateGitOrg/admitly/internal/config"
+	"github.com/SlateGitOrg/admitly/internal/imageref"
+	"github.com/SlateGitOrg/admitly/internal/server"
+	"github.com/SlateGitOrg/admitly/internal/signature"
+	"github.com/SlateGitOrg/admitly/internal/tlsutil"
 )
 
 // Options control a benchmark run.

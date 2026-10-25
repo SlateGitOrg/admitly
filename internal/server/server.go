@@ -15,13 +15,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/archit2501/admitly/internal/admission"
-	"github.com/archit2501/admitly/internal/audit"
-	"github.com/archit2501/admitly/internal/config"
-	"github.com/archit2501/admitly/internal/engine"
-	"github.com/archit2501/admitly/internal/metrics"
-	"github.com/archit2501/admitly/internal/signature"
-	"github.com/archit2501/admitly/internal/webhook"
+	"github.com/SlateGitOrg/admitly/internal/admission"
+	"github.com/SlateGitOrg/admitly/internal/audit"
+	"github.com/SlateGitOrg/admitly/internal/config"
+	"github.com/SlateGitOrg/admitly/internal/engine"
+	"github.com/SlateGitOrg/admitly/internal/metrics"
+	"github.com/SlateGitOrg/admitly/internal/signature"
+	"github.com/SlateGitOrg/admitly/internal/webhook"
 )
 
 // Server is an assembled admitly webhook.

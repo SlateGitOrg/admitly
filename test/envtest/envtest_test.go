@@ -39,11 +39,11 @@ import (
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 
-	"github.com/archit2501/admitly/internal/config"
-	"github.com/archit2501/admitly/internal/imageref"
-	"github.com/archit2501/admitly/internal/server"
-	"github.com/archit2501/admitly/internal/signature"
-	"github.com/archit2501/admitly/internal/tlsutil"
+	"github.com/SlateGitOrg/admitly/internal/config"
+	"github.com/SlateGitOrg/admitly/internal/imageref"
+	"github.com/SlateGitOrg/admitly/internal/server"
+	"github.com/SlateGitOrg/admitly/internal/signature"
+	"github.com/SlateGitOrg/admitly/internal/tlsutil"
 )
 
 const (

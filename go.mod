@@ -1,4 +1,4 @@
-module github.com/archit2501/admitly
+module github.com/SlateGitOrg/admitly
 
 go 1.27.1
 

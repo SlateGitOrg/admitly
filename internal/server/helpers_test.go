@@ -11,9 +11,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/archit2501/admitly/internal/config"
-	"github.com/archit2501/admitly/internal/imageref"
-	"github.com/archit2501/admitly/internal/signature"
+	"github.com/SlateGitOrg/admitly/internal/config"
+	"github.com/SlateGitOrg/admitly/internal/imageref"
+	"github.com/SlateGitOrg/admitly/internal/signature"
 )
 
 // signedImage is the only image the test signature store holds a signature for.

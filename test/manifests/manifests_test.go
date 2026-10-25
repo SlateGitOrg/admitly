@@ -13,8 +13,8 @@ import (
 	utilyaml "k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"github.com/archit2501/admitly/internal/config"
-	"github.com/archit2501/admitly/internal/policy"
+	"github.com/SlateGitOrg/admitly/internal/config"
+	"github.com/SlateGitOrg/admitly/internal/policy"
 )
 
 // TestDeployManifestsDecodeStrictly decodes every document in deploy/ and

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/archit2501/admitly/policies"
+	"github.com/SlateGitOrg/admitly/policies"
 )
 
 const validDoc = `

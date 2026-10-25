@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/archit2501/admitly/internal/celenv"
-	"github.com/archit2501/admitly/internal/mutate"
-	"github.com/archit2501/admitly/internal/policy"
-	"github.com/archit2501/admitly/internal/signature"
+	"github.com/SlateGitOrg/admitly/internal/celenv"
+	"github.com/SlateGitOrg/admitly/internal/mutate"
+	"github.com/SlateGitOrg/admitly/internal/policy"
+	"github.com/SlateGitOrg/admitly/internal/signature"
 )
 
 // PolicySet is an immutable, compiled set of policies. It is swapped

@@ -78,7 +78,7 @@ spec:
               app.kubernetes.io/name: admitly
       containers:
         - name: admitly
-          image: ghcr.io/archit2501/admitly:0.1.0
+          image: ghcr.io/SlateGitOrg/admitly:0.1.0
           args: ["serve", "--config", "/etc/admitly/config/admitly.yaml"]
           ports:
             - name: https

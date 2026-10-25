@@ -28,7 +28,7 @@ import (
 	"hash"
 	"io"
 
-	"github.com/archit2501/admitly/internal/imageref"
+	"github.com/SlateGitOrg/admitly/internal/imageref"
 )
 
 // PayloadType is the critical.type value of a cosign container image signature.

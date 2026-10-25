@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/archit2501/admitly/internal/imageref"
+	"github.com/SlateGitOrg/admitly/internal/imageref"
 )
 
 // Result describes a successful verification.

@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/archit2501/admitly/internal/imageref"
+	"github.com/SlateGitOrg/admitly/internal/imageref"
 )
 
 // APIVersion is the only accepted apiVersion for policy documents.

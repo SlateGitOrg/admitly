@@ -47,7 +47,7 @@ import (
 	"gopkg.in/inf.v0"
 	"k8s.io/apimachinery/pkg/api/resource"
 
-	"github.com/archit2501/admitly/internal/imageref"
+	"github.com/SlateGitOrg/admitly/internal/imageref"
 )
 
 // Variable names exposed to policy expressions.

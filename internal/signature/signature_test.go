@@ -20,7 +20,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/archit2501/admitly/internal/imageref"
+	"github.com/SlateGitOrg/admitly/internal/imageref"
 )
 
 const testDigest = "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"

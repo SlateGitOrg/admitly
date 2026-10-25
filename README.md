@@ -6,16 +6,20 @@ defaulting, and cosign-compatible image signature verification. Written in Go,
 tested against golden AdmissionReview v1 fixtures and a real kube-apiserver
 (envtest).
 
-> Status: a portfolio / lab project. It has not been run on a production
-> cluster. See [Limitations](#limitations).
+[![CI](https://github.com/SlateGitOrg/admitly/actions/workflows/ci.yml/badge.svg)](https://github.com/SlateGitOrg/admitly/actions/workflows/ci.yml)
 
-## What and why
+> Status: experimental. It has not been run on a production cluster; see
+> [Limitations](#limitations).
+
+## Why
 
 Admission control is where a cluster says no: no privileged pods, no images
 from random registries, no unsigned builds. The usual tools (Kyverno, OPA
 Gatekeeper, and the in-tree ValidatingAdmissionPolicy) are large. admitly is a
-small, readable implementation of the same core ideas, built to show how the
-pieces work and where they fail:
+small, readable implementation of the same core ideas, built so the pieces
+are easy to follow and their failure modes are explicit.
+
+## Features
 
 - **Policies as CEL**, in a ValidatingAdmissionPolicy-like YAML shape
   (`match`, `matchConditions`, `variables`, `validations`), compiled and
@@ -35,8 +39,8 @@ pieces work and where they fail:
   fail-open/closed mode for deadlines and internal errors, and tests that
   exercise the API server's own `failurePolicy` with the webhook down.
 
-Who it's for: platform/security engineers who want to understand or prototype
-admission policy, and reviewers looking for a compact, tested reference.
+It is aimed at platform and security engineers who want to understand or
+prototype admission policy with a compact, tested codebase.
 
 ## Architecture
 
@@ -92,7 +96,7 @@ bin/admitly certs --hosts admitly.admitly-system.svc --out certs
 bin/admitly serve --config examples/admitly.yaml
 ```
 
-In-cluster manifests (lab use, not tested on a real cluster): `deploy/admitly.yaml`
+In-cluster manifests (not yet applied to a real cluster): `deploy/admitly.yaml`
 and `deploy/webhooks.yaml`.
 
 ## Writing a policy
@@ -143,7 +147,7 @@ policies:
 `make demo` (from `scripts/demo.sh`) generates a lab key and TLS material,
 signs three images, lints the policies, evaluates `examples/manifests/pods.yaml`
 offline, then starts the real HTTPS webhook and sends it AdmissionReviews with
-curl. Excerpt from a real run (full output in the build report):
+curl. Excerpt from a real run (trimmed):
 
 ```text
 ==> 4. Offline evaluation of examples/manifests/pods.yaml (mutate -> validate)
@@ -221,7 +225,7 @@ untrusted client   -> TLS verification failed (expected: client does not trust t
 | **Interop**: signatures made by the `openssl` CLI (the same ASN.1/SHA-256 scheme `cosign sign-blob` uses) verify, and vice versa | `TestOpenSSLInterop` | `make test` (skips without openssl) |
 | Deploy manifests strict-decoded into typed Kubernetes objects | `test/manifests/` | `make test` |
 
-Results from the run recorded in the build report:
+Results from a local run:
 
 - `make check`: all gates passed; statement coverage of `internal/...` + `policies` **91.6%**
   (threshold 80%, measured by `scripts/coverage.sh` over a `-coverpkg` profile).
@@ -328,7 +332,25 @@ The full list with costs is in [DECISIONS.md](DECISIONS.md).
 - Generic `MutationPolicy` patches beyond securityContext.
 - Real-cluster smoke test (kind) as an opt-in `make integration` target.
 
+## Project layout
+
+```text
+cmd/admitly/        entry point (delegates to internal/cli)
+internal/cli        serve, eval, lint, certs, keygen, sign, verify, bench
+internal/engine     policy compilation and evaluation
+internal/celenv     CEL environment and custom functions
+internal/webhook    HTTP routes, limits, TLS
+internal/admission  AdmissionReview to decision
+internal/mutate     securityContext defaults as JSON Patch
+internal/signature  cosign-compatible verification and store
+policies/builtin/   embedded policy library
+examples/, deploy/  sample policies and manifests, in-cluster manifests
+testdata/golden/    AdmissionReview request/response fixtures
+test/envtest/       real kube-apiserver suite
+docs/               architecture and threat model
+```
+
 ## License
 
-MIT, see [LICENSE](LICENSE). All test data is synthetic and generated in this
+MIT — see [LICENSE](LICENSE). All test data is synthetic and generated in this
 repository (see [DATA.md](DATA.md)).

@@ -20,13 +20,13 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	utilyaml "k8s.io/apimachinery/pkg/util/yaml"
 
-	"github.com/archit2501/admitly/internal/admission"
-	"github.com/archit2501/admitly/internal/config"
-	"github.com/archit2501/admitly/internal/engine"
-	"github.com/archit2501/admitly/internal/mutate"
-	"github.com/archit2501/admitly/internal/policy"
-	"github.com/archit2501/admitly/internal/signature"
-	"github.com/archit2501/admitly/policies"
+	"github.com/SlateGitOrg/admitly/internal/admission"
+	"github.com/SlateGitOrg/admitly/internal/config"
+	"github.com/SlateGitOrg/admitly/internal/engine"
+	"github.com/SlateGitOrg/admitly/internal/mutate"
+	"github.com/SlateGitOrg/admitly/internal/policy"
+	"github.com/SlateGitOrg/admitly/internal/signature"
+	"github.com/SlateGitOrg/admitly/policies"
 )
 
 // errDenied makes `admitly eval` exit 1 when any object is denied, so it

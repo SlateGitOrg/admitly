@@ -48,4 +48,4 @@ formatters:
     - goimports
   settings:
     goimports:
-      local-prefixes: [github.com/archit2501/admitly]
+      local-prefixes: [github.com/SlateGitOrg/admitly]

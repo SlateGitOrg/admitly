@@ -9,7 +9,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"github.com/archit2501/admitly/internal/engine"
+	"github.com/SlateGitOrg/admitly/internal/engine"
 )
 
 // Metrics holds every admitly collector. The zero value is not usable; use New.

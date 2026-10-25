@@ -17,9 +17,9 @@ import (
 	kjson "sigs.k8s.io/json"
 	"sigs.k8s.io/yaml"
 
-	"github.com/archit2501/admitly/internal/admission"
-	"github.com/archit2501/admitly/internal/policy"
-	"github.com/archit2501/admitly/policies"
+	"github.com/SlateGitOrg/admitly/internal/admission"
+	"github.com/SlateGitOrg/admitly/internal/policy"
+	"github.com/SlateGitOrg/admitly/policies"
 )
 
 // Duration is a time.Duration that decodes from strings like "3s".

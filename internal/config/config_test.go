@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/archit2501/admitly/internal/admission"
-	"github.com/archit2501/admitly/internal/policy"
+	"github.com/SlateGitOrg/admitly/internal/admission"
+	"github.com/SlateGitOrg/admitly/internal/policy"
 )
 
 func TestDefaultsAndParse(t *testing.T) {

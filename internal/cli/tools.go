@@ -14,10 +14,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/archit2501/admitly/internal/imageref"
-	"github.com/archit2501/admitly/internal/policy"
-	"github.com/archit2501/admitly/internal/signature"
-	"github.com/archit2501/admitly/internal/tlsutil"
+	"github.com/SlateGitOrg/admitly/internal/imageref"
+	"github.com/SlateGitOrg/admitly/internal/policy"
+	"github.com/SlateGitOrg/admitly/internal/signature"
+	"github.com/SlateGitOrg/admitly/internal/tlsutil"
 )
 
 func runLint(_ context.Context, args []string, stdout, stderr io.Writer) error {

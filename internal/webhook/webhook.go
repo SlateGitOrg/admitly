@@ -27,9 +27,9 @@ import (
 	admissionv1 "k8s.io/api/admission/v1"
 	kjson "sigs.k8s.io/json"
 
-	"github.com/archit2501/admitly/internal/admission"
-	"github.com/archit2501/admitly/internal/metrics"
-	"github.com/archit2501/admitly/internal/tlsutil"
+	"github.com/SlateGitOrg/admitly/internal/admission"
+	"github.com/SlateGitOrg/admitly/internal/metrics"
+	"github.com/SlateGitOrg/admitly/internal/tlsutil"
 )
 
 // DefaultMaxBodyBytes matches the API server's 3 MiB request size limit.

@@ -23,10 +23,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/yaml"
 
-	"github.com/archit2501/admitly/internal/imageref"
-	"github.com/archit2501/admitly/internal/policy"
-	"github.com/archit2501/admitly/internal/signature"
-	"github.com/archit2501/admitly/policies"
+	"github.com/SlateGitOrg/admitly/internal/imageref"
+	"github.com/SlateGitOrg/admitly/internal/policy"
+	"github.com/SlateGitOrg/admitly/internal/signature"
+	"github.com/SlateGitOrg/admitly/policies"
 )
 
 const digest = "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"

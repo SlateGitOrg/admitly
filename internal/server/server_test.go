@@ -19,10 +19,10 @@ import (
 
 	admissionv1 "k8s.io/api/admission/v1"
 
-	"github.com/archit2501/admitly/internal/admission"
-	"github.com/archit2501/admitly/internal/audit"
-	"github.com/archit2501/admitly/internal/config"
-	"github.com/archit2501/admitly/internal/tlsutil"
+	"github.com/SlateGitOrg/admitly/internal/admission"
+	"github.com/SlateGitOrg/admitly/internal/audit"
+	"github.com/SlateGitOrg/admitly/internal/config"
+	"github.com/SlateGitOrg/admitly/internal/tlsutil"
 )
 
 func goldenRequest(t testing.TB, name string) []byte {

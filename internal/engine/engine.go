@@ -13,11 +13,11 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/archit2501/admitly/internal/celenv"
-	"github.com/archit2501/admitly/internal/imageref"
-	"github.com/archit2501/admitly/internal/mutate"
-	"github.com/archit2501/admitly/internal/policy"
-	"github.com/archit2501/admitly/internal/signature"
+	"github.com/SlateGitOrg/admitly/internal/celenv"
+	"github.com/SlateGitOrg/admitly/internal/imageref"
+	"github.com/SlateGitOrg/admitly/internal/mutate"
+	"github.com/SlateGitOrg/admitly/internal/policy"
+	"github.com/SlateGitOrg/admitly/internal/signature"
 )
 
 // ErrNoPolicies is returned by Validate/Mutate before any set was loaded.

@@ -14,8 +14,8 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/archit2501/admitly/internal/config"
-	"github.com/archit2501/admitly/internal/server"
+	"github.com/SlateGitOrg/admitly/internal/config"
+	"github.com/SlateGitOrg/admitly/internal/server"
 )
 
 // Version is set at build time with -ldflags "-X .../cli.Version=...".

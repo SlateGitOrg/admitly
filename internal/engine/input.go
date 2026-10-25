@@ -6,8 +6,8 @@ import (
 	admissionv1 "k8s.io/api/admission/v1"
 	kjson "sigs.k8s.io/json"
 
-	"github.com/archit2501/admitly/internal/celenv"
-	"github.com/archit2501/admitly/internal/policy"
+	"github.com/SlateGitOrg/admitly/internal/celenv"
+	"github.com/SlateGitOrg/admitly/internal/policy"
 )
 
 // Input is the decoded form of one admission request, shared by every policy

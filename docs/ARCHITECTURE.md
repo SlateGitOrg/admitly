@@ -40,7 +40,7 @@ sequenceDiagram
   API->>W: POST /validate?timeout=10s (AdmissionReview v1, TLS)
   W->>W: content-type, 3 MiB cap, strict decode, budget = 0.8 x timeout
   W->>A: Review(ctx, Validate, review)
-  A->>A: check envelope (v1, request, uid); ctx deadline = min(config timeout, budget)
+  A->>A: check envelope (v1, request, uid), ctx deadline = min(config timeout, budget)
   A->>E: NewInput(request) then Validate(ctx, input)
   loop each validating policy (sorted by name)
     E->>E: match (kind/group/op/subresource/namespace globs)
@@ -52,7 +52,7 @@ sequenceDiagram
     end
   end
   E-->>A: Result{violations, ignored, incomplete}
-  A->>A: enforce -> deny 403/422/401; audit -> warnings + annotations; incomplete -> failure mode
+  A->>A: enforce: deny 403/422/401, audit: warnings and annotations, incomplete: failure mode
   A-->>W: AdmissionReview response (same UID)
   W-->>API: 200 JSON
 ```

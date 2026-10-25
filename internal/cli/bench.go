@@ -7,7 +7,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/archit2501/admitly/internal/bench"
+	"github.com/SlateGitOrg/admitly/internal/bench"
 )
 
 func runBench(ctx context.Context, args []string, stdout, stderr io.Writer) error {
