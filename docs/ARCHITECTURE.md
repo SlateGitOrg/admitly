@@ -92,10 +92,14 @@ evaluated in order, exposed as `variables.<name>`), `failurePolicy`,
 Extensions: cel-go optional types (`a.?b.orValue(x)`), strings, sets, lists,
 math; plus `parseImage(s)` (registry, repository, name, tag, digest),
 `s.matchesGlob(pattern)`, and two Kubernetes-quantity helpers:
-`quantityCompare(a, b)` (-1/0/1, exact via `resource.Quantity.Cmp`, safe for
-any size) and `quantityMilli(q)` (milli-units as int; an evaluation error when
+`quantityCompare(a, b)` (-1/0/1, exact via `resource.Quantity.Cmp` up to a
+magnitude of 10^1000; larger values such as `1e100000000` compare as
++/-infinity) and `quantityMilli(q)` (milli-units as int; an evaluation error when
 the value does not fit in int64, e.g. `10Pi`, instead of wrapping negative).
-Limit checks should use `quantityCompare`.
+Limit checks should use `quantityCompare`. Both reject quantity strings longer
+than 128 characters and never hand an out-of-range decimal exponent to
+`math/big`: a native function call cannot be interrupted by the deadline, so
+its cost must be bounded by construction.
 
 Pod-spec locations are a static table (`internal/engine/input.go`):
 `/spec` (Pod), `/spec/template/spec` (Deployment, StatefulSet, DaemonSet,
