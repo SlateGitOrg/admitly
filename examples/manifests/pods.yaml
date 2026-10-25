@@ -1,0 +1,59 @@
+# Example workloads for `admitly eval` and `make demo`.
+# The signed image digest below is signed at demo time by scripts/demo.sh.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: checkout
+  namespace: shop
+  labels: {app.kubernetes.io/name: checkout, team: payments}
+spec:
+  containers:
+    - name: app
+      image: registry.lab.local/shop/checkout@sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+      resources:
+        limits: {cpu: 500m, memory: 256Mi}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: debug-shell
+  namespace: shop
+  labels: {app.kubernetes.io/name: debug-shell}
+spec:
+  hostPID: true
+  containers:
+    - name: shell
+      image: docker.io/library/busybox:1.36
+      securityContext: {privileged: true}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: unsigned
+  namespace: shop
+  labels: {app.kubernetes.io/name: unsigned, team: payments}
+spec:
+  containers:
+    - name: app
+      image: registry.lab.local/shop/unsigned@sha256:9b2a0f1fbc6a7ba6e1c8e0c3cfa8f0f9d2c2c8b1b6e7d5a4c3b2a1f0e9d8c7b6
+      resources:
+        limits: {cpu: 250m, memory: 128Mi}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: storefront
+  namespace: shop
+  labels: {app.kubernetes.io/name: storefront, team: web}
+spec:
+  replicas: 3
+  selector: {matchLabels: {app: storefront}}
+  template:
+    metadata:
+      labels: {app: storefront}
+    spec:
+      containers:
+        - name: web
+          image: registry.lab.local/shop/storefront:latest@sha256:1d3f0c9a7b2e4d6f8a0c2e4f6a8b0d2f4a6c8e0b2d4f6a8c0e2a4c6e8a0b2d4f
+          resources:
+            limits: {cpu: "1", memory: 6Gi}
