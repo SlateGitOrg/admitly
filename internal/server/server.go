@@ -106,7 +106,7 @@ func openAudit(path string) (*audit.Logger, io.Closer, error) {
 	case "-":
 		return audit.New(os.Stdout), nil, nil
 	default:
-		f, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o640)
+		f, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o600)
 		if err != nil {
 			return nil, nil, fmt.Errorf("opening audit log: %w", err)
 		}

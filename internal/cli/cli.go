@@ -107,7 +107,7 @@ func parseFlags(fs *flag.FlagSet, args []string) error {
 		if errors.Is(err, flag.ErrHelp) {
 			return err
 		}
-		return fmt.Errorf("%w: %v", errUsage, err)
+		return fmt.Errorf("%w: %w", errUsage, err)
 	}
 	return nil
 }
@@ -154,7 +154,7 @@ func runServe(ctx context.Context, args []string, _, stderr io.Writer) error {
 	if err != nil {
 		return err
 	}
-	defer srv.Close()
+	defer func() { _ = srv.Close() }()
 	ln, err := net.Listen("tcp", cfg.Listen)
 	if err != nil {
 		return fmt.Errorf("listening on %s: %w", cfg.Listen, err)

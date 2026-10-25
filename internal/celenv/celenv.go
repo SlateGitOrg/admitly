@@ -123,7 +123,7 @@ func (e *Env) Compile(src string, want *cel.Type) (*Program, error) {
 	}
 	ast, iss := e.env.Compile(src)
 	if iss.Err() != nil {
-		return nil, fmt.Errorf("%w: %s", ErrCompile, iss.Err())
+		return nil, fmt.Errorf("%w: %w", ErrCompile, iss.Err())
 	}
 	out := ast.OutputType()
 	if want != cel.DynType && out != cel.DynType && !want.IsAssignableType(out) {

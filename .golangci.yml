@@ -1,0 +1,51 @@
+version: "2"
+run:
+  build-tags: [envtest]
+  tests: true
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - errorlint
+    - gocritic
+    - gosec
+    - misspell
+    - nilerr
+    - revive
+    - unconvert
+    - unparam
+    - copyloopvar
+    - usestdlibvars
+  settings:
+    errcheck:
+      exclude-functions:
+        # Terminal/report output: a failed write to stdout/stderr has no recovery path.
+        - fmt.Fprintf
+        - fmt.Fprintln
+        - fmt.Fprint
+    gosec:
+      excludes:
+        - G304 # file paths come from operator-controlled config/CLI flags by design
+    revive:
+      rules:
+        - name: exported
+        - name: package-comments
+        - name: var-naming
+        - name: indent-error-flow
+        - name: error-strings
+        - name: errorf
+        - name: receiver-naming
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters: [gosec, unparam]
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes: [github.com/archit2501/admitly]

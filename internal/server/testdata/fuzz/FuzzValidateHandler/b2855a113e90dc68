@@ -1,0 +1,3 @@
+go test fuzz v1
+[]byte("{\"apiVersion\":\"admission.k8s.io/v1\",\"kind\":\"AdmissionReview\",\"request\":{\"uid\":\"0\"}}0")
+bool(true)

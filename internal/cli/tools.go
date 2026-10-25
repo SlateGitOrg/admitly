@@ -95,13 +95,13 @@ func runKeygen(_ context.Context, args []string, stdout, stderr io.Writer) error
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(*out, 0o755); err != nil {
+	if err := os.MkdirAll(*out, 0o750); err != nil {
 		return err
 	}
 	if err := os.WriteFile(keyPath, pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: privDER}), 0o600); err != nil {
 		return err
 	}
-	if err := os.WriteFile(pubPath, pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: pubDER}), 0o644); err != nil {
+	if err := os.WriteFile(pubPath, pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: pubDER}), 0o644); err != nil { //nolint:gosec // a public key is meant to be world-readable
 		return err
 	}
 	pk, err := signature.ParsePublicKey(pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: pubDER}))
@@ -120,7 +120,7 @@ func runSign(_ context.Context, args []string, stdout, stderr io.Writer) error {
 		return err
 	}
 	if *store == "" || fs.NArg() == 0 {
-		return fmt.Errorf("%w: usage: admitly sign --key KEY --store DIR IMAGE@sha256:...", errUsage)
+		return fmt.Errorf("%w: usage: admitly sign --key KEY --store DIR IMAGE@sha256:<digest>", errUsage)
 	}
 	data, err := os.ReadFile(*keyPath)
 	if err != nil {
@@ -157,7 +157,7 @@ func runVerify(ctx context.Context, args []string, stdout, stderr io.Writer) err
 		return err
 	}
 	if *store == "" || fs.NArg() == 0 {
-		return fmt.Errorf("%w: usage: admitly verify --key PUB --store DIR IMAGE@sha256:...", errUsage)
+		return fmt.Errorf("%w: usage: admitly verify --key PUB --store DIR IMAGE@sha256:<digest>", errUsage)
 	}
 	data, err := os.ReadFile(*keyPath)
 	if err != nil {

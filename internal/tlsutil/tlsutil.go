@@ -138,7 +138,7 @@ func GenerateServing(hosts []string, validity time.Duration) (*Bundle, error) {
 // key is deliberately not written: rotation regenerates the whole bundle, so
 // no long-lived CA key sits next to the webhook.
 func (b *Bundle) WriteServing(dir string) error {
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return err
 	}
 	files := []struct {

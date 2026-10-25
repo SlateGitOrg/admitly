@@ -16,6 +16,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"mime"
 	"net"
@@ -99,15 +100,20 @@ func (s *server) review(ep admission.Endpoint) http.HandlerFunc {
 			s.badRequest(w, http.StatusUnsupportedMediaType, "content_type", "Content-Type must be application/json")
 			return
 		}
-		body := http.MaxBytesReader(w, r.Body, s.opts.MaxBodyBytes)
-		var review admissionv1.AdmissionReview
-		dec := kjson.NewDecoderCaseSensitivePreserveInts(body)
-		if err := dec.Decode(&review); err != nil {
+		data, err := io.ReadAll(http.MaxBytesReader(w, r.Body, s.opts.MaxBodyBytes))
+		if err != nil {
 			var tooBig *http.MaxBytesError
 			if errors.As(err, &tooBig) {
 				s.badRequest(w, http.StatusRequestEntityTooLarge, "too_large", fmt.Sprintf("request body exceeds %d bytes", s.opts.MaxBodyBytes))
 				return
 			}
+			s.badRequest(w, http.StatusBadRequest, "read", "reading body: "+err.Error())
+			return
+		}
+		// Unmarshal (not a streaming Decode) so trailing data after the
+		// review is rejected instead of silently ignored.
+		var review admissionv1.AdmissionReview
+		if err := kjson.UnmarshalCaseSensitivePreserveInts(data, &review); err != nil {
 			s.badRequest(w, http.StatusBadRequest, "decode", "decoding AdmissionReview: "+err.Error())
 			return
 		}

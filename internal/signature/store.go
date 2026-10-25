@@ -65,7 +65,7 @@ func (s DirStore) Signatures(ctx context.Context, ref imageref.Ref) ([]Signature
 	if err != nil {
 		return nil, fmt.Errorf("opening signature store: %w", err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	var out []Signature
 	sc := bufio.NewScanner(f)
@@ -93,14 +93,14 @@ func (s DirStore) Put(ref imageref.Ref, sig Signature) error {
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		return fmt.Errorf("creating store directory: %w", err)
 	}
 	line, err := json.Marshal(sig)
 	if err != nil {
 		return err
 	}
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644) //nolint:gosec // signatures are public; the webhook only reads them
 	if err != nil {
 		return fmt.Errorf("opening signature file: %w", err)
 	}

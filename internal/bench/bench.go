@@ -87,7 +87,7 @@ func Run(ctx context.Context, opts Options) (*Report, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer os.RemoveAll(dir)
+	defer func() { _ = os.RemoveAll(dir) }()
 
 	cfg, bundle, err := setup(dir)
 	if err != nil {
@@ -97,7 +97,7 @@ func Run(ctx context.Context, opts Options) (*Report, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer srv.Close()
+	defer func() { _ = srv.Close() }()
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		return nil, err
@@ -145,7 +145,7 @@ func setup(dir string) (*config.Config, *tlsutil.Bundle, error) {
 		return nil, nil, err
 	}
 	polDir := filepath.Join(dir, "policies")
-	if err := os.MkdirAll(polDir, 0o755); err != nil {
+	if err := os.MkdirAll(polDir, 0o750); err != nil {
 		return nil, nil, err
 	}
 	if err := os.WriteFile(filepath.Join(polDir, "cosign.pub"), pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: der}), 0o600); err != nil {
@@ -205,7 +205,7 @@ func container(name, image string, limits bool, sc map[string]any) map[string]an
 	return c
 }
 
-func review(uid, op string, obj map[string]any) []byte {
+func review(uid string, obj map[string]any) []byte {
 	apiVersion, _ := obj["apiVersion"].(string)
 	group, version := "", apiVersion
 	if i := bytes.IndexByte([]byte(apiVersion), '/'); i >= 0 {
@@ -222,7 +222,7 @@ func review(uid, op string, obj map[string]any) []byte {
 			"resource":  map[string]any{"group": group, "version": version, "resource": "x"},
 			"name":      meta["name"],
 			"namespace": "shop",
-			"operation": op,
+			"operation": "CREATE",
 			"userInfo":  map[string]any{"username": "bench"},
 			"object":    obj,
 		},
@@ -254,10 +254,10 @@ func scenarios() []scenario {
 		}},
 	}
 	return []scenario{
-		{"compliant pod (6 policies incl. signature)", "validate", review("b-1", "CREATE", good), true, false},
-		{"violating pod (5 policies deny)", "validate", review("b-2", "CREATE", bad), false, false},
-		{"deployment template", "validate", review("b-3", "CREATE", deploy), true, false},
-		{"pod securityContext defaults", "mutate", review("b-4", "CREATE", good), true, true},
+		{"compliant pod (6 policies incl. signature)", "validate", review("b-1", good), true, false},
+		{"violating pod (5 policies deny)", "validate", review("b-2", bad), false, false},
+		{"deployment template", "validate", review("b-3", deploy), true, false},
+		{"pod securityContext defaults", "mutate", review("b-4", good), true, true},
 	}
 }
 
@@ -327,7 +327,7 @@ func call(ctx context.Context, client *http.Client, url string, sc scenario) err
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err

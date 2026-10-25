@@ -1,6 +1,7 @@
 package webhook
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
@@ -14,7 +15,7 @@ func TestAPIServerBudget(t *testing.T) {
 		"/validate?timeout=abc":   0,
 		"/validate?timeout=-1s":   0,
 	} {
-		got, ok := apiServerBudget(httptest.NewRequest("POST", q, nil))
+		got, ok := apiServerBudget(httptest.NewRequest(http.MethodPost, q, nil))
 		if got != want || ok != (want != 0) {
 			t.Errorf("%s: got %v %v, want %v", q, got, ok, want)
 		}

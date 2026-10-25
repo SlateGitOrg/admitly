@@ -377,7 +377,7 @@ func (h *harness) waitUntilEnforced() {
 		if err != nil && strings.Contains(err.Error(), "admitly denied the request") {
 			return nil
 		}
-		return fmt.Errorf("webhook not active yet: %v", err)
+		return fmt.Errorf("webhook not active yet: %w", err)
 	})
 	if err != nil {
 		h.t.Fatal(err)

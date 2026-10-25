@@ -25,7 +25,7 @@ import (
 	"github.com/archit2501/admitly/internal/tlsutil"
 )
 
-func goldenRequest(t *testing.T, name string) []byte {
+func goldenRequest(t testing.TB, name string) []byte {
 	t.Helper()
 	b, err := os.ReadFile(filepath.Join("..", "..", "testdata", "golden", name+".request.json"))
 	if err != nil {
@@ -40,7 +40,7 @@ func post(t *testing.T, client *http.Client, url string, body []byte) (*admissio
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	raw, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode != http.StatusOK {
 		return nil, resp.StatusCode, string(raw)
@@ -164,7 +164,7 @@ func TestHTTPErrors(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		raw, _ := io.ReadAll(resp.Body)
 		return resp.StatusCode, string(raw)
 	}
@@ -225,7 +225,7 @@ func TestAuditLogRecords(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	var recs []audit.Record
 	sc := bufio.NewScanner(f)
 	for sc.Scan() {
@@ -342,7 +342,8 @@ func TestServeTLSAndMTLS(t *testing.T) {
 		t.Fatalf("HTTPS validate: %d %s", code, body)
 	}
 	untrusting := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12}}}
-	if _, err := untrusting.Get(url + "/healthz"); err == nil {
+	if resp, err := untrusting.Get(url + "/healthz"); err == nil {
+		_ = resp.Body.Close()
 		t.Fatal("client without the CA must fail TLS verification")
 	}
 	stop()
@@ -360,7 +361,8 @@ func TestServeTLSAndMTLS(t *testing.T) {
 	cfg.TLS.ClientCAFile = filepath.Join(dir, "client-ca.crt")
 	url, stop = runTLS(t, newServer(t, cfg))
 	defer stop()
-	if _, err := trusting.Get(url + "/healthz"); err == nil {
+	if resp, err := trusting.Get(url + "/healthz"); err == nil {
+		_ = resp.Body.Close()
 		t.Fatal("mTLS server must reject a client without a certificate")
 	}
 	pair, err := clientCert.TLSCertificate()
@@ -382,7 +384,7 @@ func TestRunFailsWithoutCertificates(t *testing.T) {
 	cfg.TLS.CertFile = filepath.Join(dir, "missing.crt")
 	cfg.TLS.KeyFile = filepath.Join(dir, "missing.key")
 	ln, _ := net.Listen("tcp", "127.0.0.1:0")
-	defer ln.Close()
+	defer func() { _ = ln.Close() }()
 	if err := newServer(t, cfg).Run(context.Background(), ln); err == nil {
 		t.Fatal("want TLS load error")
 	}

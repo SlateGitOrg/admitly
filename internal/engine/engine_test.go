@@ -8,6 +8,7 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -32,7 +33,7 @@ const digest = "sha256:0123456789abcdef0123456789abcdef0123456789abcdef012345678
 
 var quietLog = slog.New(slog.NewTextHandler(&bytes.Buffer{}, nil))
 
-func request(t *testing.T, op admissionv1.Operation, objYAML string) *admissionv1.AdmissionRequest {
+func request(t testing.TB, op admissionv1.Operation, objYAML string) *admissionv1.AdmissionRequest {
 	t.Helper()
 	raw, err := yaml.YAMLToJSON([]byte(objYAML))
 	if err != nil {
@@ -83,7 +84,7 @@ func input(t *testing.T, op admissionv1.Operation, objYAML string) *Input {
 	return in
 }
 
-func builtinEngine(t *testing.T, opts Options, extra ...*policy.Policy) *Engine {
+func builtinEngine(t testing.TB, opts Options, extra ...*policy.Policy) *Engine {
 	t.Helper()
 	ps, err := policy.LoadFS(policies.Builtin(), "builtin")
 	if err != nil {
@@ -638,10 +639,10 @@ spec:
 
 func TestNoPolicies(t *testing.T) {
 	e, _ := New(Options{})
-	if _, err := e.Validate(context.Background(), &Input{}); err != ErrNoPolicies {
+	if _, err := e.Validate(context.Background(), &Input{}); !errors.Is(err, ErrNoPolicies) {
 		t.Fatal(err)
 	}
-	if _, err := e.Mutate(context.Background(), &Input{}); err != ErrNoPolicies {
+	if _, err := e.Mutate(context.Background(), &Input{}); !errors.Is(err, ErrNoPolicies) {
 		t.Fatal(err)
 	}
 	if _, err := NewInput(nil); err == nil {
