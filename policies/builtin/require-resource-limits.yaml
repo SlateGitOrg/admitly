@@ -1,0 +1,44 @@
+# Containers without limits can starve their neighbours; maxMemory caps a
+# single container's memory limit.
+apiVersion: admitly.dev/v1alpha1
+kind: ValidationPolicy
+metadata:
+  name: require-resource-limits
+spec:
+  mode: Enforce
+  severity: medium
+  description: Require cpu and memory limits on every container and cap memory.
+  match:
+    resources:
+      - apiGroups: [""]
+        kinds: [Pod]
+      - apiGroups: [apps]
+        kinds: [Deployment, StatefulSet, DaemonSet, ReplicaSet]
+      - apiGroups: [batch]
+        kinds: [Job, CronJob]
+    excludeNamespaces: [kube-system]
+  params:
+    maxMemory: 4Gi
+  variables:
+    # Ephemeral containers cannot declare resources, so they are excluded here.
+    - name: workloadContainers
+      expression: >-
+        podSpec.?initContainers.orValue([]) + podSpec.?containers.orValue([])
+    - name: noLimits
+      expression: >-
+        variables.workloadContainers.filter(c,
+          !('cpu' in c.?resources.?limits.orValue({})) ||
+          !('memory' in c.?resources.?limits.orValue({}))).map(c, c.name)
+    - name: overMemory
+      expression: >-
+        !has(params.maxMemory) ? [] :
+        variables.workloadContainers.filter(c,
+          'memory' in c.?resources.?limits.orValue({}) &&
+          quantityMilli(c.resources.limits.memory) > quantityMilli(params.maxMemory)).map(c, c.name)
+  validations:
+    - expression: size(variables.noLimits) == 0
+      messageExpression: >-
+        'containers must set cpu and memory limits: ' + variables.noLimits.join(', ')
+    - expression: size(variables.overMemory) == 0
+      messageExpression: >-
+        'memory limit above ' + string(params.maxMemory) + ': ' + variables.overMemory.join(', ')

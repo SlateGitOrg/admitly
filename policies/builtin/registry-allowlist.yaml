@@ -1,0 +1,31 @@
+# Images may only come from approved registries/repositories. Matching is on
+# the parsed, normalised repository name with anchored globs, so
+# "registry.lab.local.evil.io/app" does not match "registry.lab.local/**".
+apiVersion: admitly.dev/v1alpha1
+kind: ValidationPolicy
+metadata:
+  name: registry-allowlist
+spec:
+  mode: Enforce
+  severity: high
+  description: Only allow images from approved registries.
+  match:
+    resources:
+      - apiGroups: [""]
+        kinds: [Pod]
+        subresources: ["", ephemeralcontainers]
+      - apiGroups: [apps]
+        kinds: [Deployment, StatefulSet, DaemonSet, ReplicaSet]
+      - apiGroups: [batch]
+        kinds: [Job, CronJob]
+    excludeNamespaces: [kube-system]
+  params:
+    allowedImages: [registry.lab.local/**]
+  variables:
+    - name: disallowed
+      expression: >-
+        containers.filter(c, !params.allowedImages.exists(p, parseImage(c.image).name.matchesGlob(p))).map(c, c.image)
+  validations:
+    - expression: size(variables.disallowed) == 0
+      messageExpression: >-
+        'images from unapproved registries: ' + variables.disallowed.join(', ')

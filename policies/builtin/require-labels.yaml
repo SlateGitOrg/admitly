@@ -1,0 +1,29 @@
+# Ownership labels make audit findings actionable: every workload must say
+# what it is and which team owns it.
+apiVersion: admitly.dev/v1alpha1
+kind: ValidationPolicy
+metadata:
+  name: require-labels
+spec:
+  mode: Enforce
+  severity: medium
+  description: Require ownership labels on Pods and workloads.
+  match:
+    resources:
+      - apiGroups: [""]
+        kinds: [Pod]
+      - apiGroups: [apps]
+        kinds: [Deployment, StatefulSet, DaemonSet, ReplicaSet]
+      - apiGroups: [batch]
+        kinds: [Job, CronJob]
+    excludeNamespaces: [kube-system]
+  params:
+    labels: [app.kubernetes.io/name, team]
+  variables:
+    - name: missing
+      expression: >-
+        params.labels.filter(l, !(l in object.?metadata.?labels.orValue({})) || object.metadata.labels[l] == '')
+  validations:
+    - expression: size(variables.missing) == 0
+      messageExpression: >-
+        'missing required labels: ' + variables.missing.join(', ')

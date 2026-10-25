@@ -1,0 +1,28 @@
+# Tags are mutable; only a digest pins the exact bytes that were reviewed and
+# signed. Signature verification also requires a digest.
+apiVersion: admitly.dev/v1alpha1
+kind: ValidationPolicy
+metadata:
+  name: require-image-digest
+spec:
+  mode: Enforce
+  severity: high
+  description: Require every image to be pinned by digest.
+  match:
+    resources:
+      - apiGroups: [""]
+        kinds: [Pod]
+        subresources: ["", ephemeralcontainers]
+      - apiGroups: [apps]
+        kinds: [Deployment, StatefulSet, DaemonSet, ReplicaSet]
+      - apiGroups: [batch]
+        kinds: [Job, CronJob]
+    excludeNamespaces: [kube-system]
+  variables:
+    - name: unpinned
+      expression: >-
+        containers.filter(c, parseImage(c.image).digest == '').map(c, c.image)
+  validations:
+    - expression: size(variables.unpinned) == 0
+      messageExpression: >-
+        'images must be pinned by digest: ' + variables.unpinned.join(', ')

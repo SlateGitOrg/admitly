@@ -1,0 +1,29 @@
+# Hardened securityContext defaults, applied only where the workload did not
+# set a value itself. Applied on CREATE so updates never change running specs.
+apiVersion: admitly.dev/v1alpha1
+kind: MutationPolicy
+metadata:
+  name: default-security-context
+spec:
+  description: Default a restricted securityContext for pods and containers.
+  match:
+    resources:
+      - apiGroups: [""]
+        kinds: [Pod]
+        operations: [CREATE]
+      - apiGroups: [apps]
+        kinds: [Deployment, StatefulSet, DaemonSet, ReplicaSet]
+        operations: [CREATE]
+      - apiGroups: [batch]
+        kinds: [Job, CronJob]
+        operations: [CREATE]
+    excludeNamespaces: [kube-system]
+  mutation:
+    podSecurityContext:
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: [ALL]

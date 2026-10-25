@@ -1,0 +1,34 @@
+# Privileged containers and shared host namespaces are equivalent to root on
+# the node. Covers Pods, workload templates and ephemeral (debug) containers.
+apiVersion: admitly.dev/v1alpha1
+kind: ValidationPolicy
+metadata:
+  name: disallow-privileged
+spec:
+  mode: Enforce
+  severity: critical
+  description: Deny privileged containers and host PID/IPC/network namespaces.
+  match:
+    resources:
+      - apiGroups: [""]
+        kinds: [Pod]
+        subresources: ["", ephemeralcontainers]
+      - apiGroups: [apps]
+        kinds: [Deployment, StatefulSet, DaemonSet, ReplicaSet]
+      - apiGroups: [batch]
+        kinds: [Job, CronJob]
+    excludeNamespaces: [kube-system]
+  variables:
+    - name: privileged
+      expression: >-
+        containers.filter(c, c.?securityContext.?privileged.orValue(false) == true).map(c, c.name)
+    - name: hostNamespaces
+      expression: >-
+        ['hostPID', 'hostIPC', 'hostNetwork'].filter(f, podSpec[?f].orValue(false) == true)
+  validations:
+    - expression: size(variables.privileged) == 0
+      messageExpression: >-
+        'privileged containers are not allowed: ' + variables.privileged.join(', ')
+    - expression: size(variables.hostNamespaces) == 0
+      messageExpression: >-
+        'sharing host namespaces is not allowed: ' + variables.hostNamespaces.join(', ')
