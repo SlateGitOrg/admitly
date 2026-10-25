@@ -17,19 +17,29 @@
 //
 //	parseImage(string) -> map(string, string)   keys: registry, repository, name, tag, digest
 //	string.matchesGlob(string) -> bool          anchored "/"-component glob, see imageref.MatchGlob
-//	quantityMilli(string|int|double) -> int     Kubernetes quantity in milli-units
+//	quantityMilli(string|int|double) -> int     Kubernetes quantity in milli-units; an error
+//	                                            (not a wrapped value) when that exceeds int64
+//	quantityCompare(q1, q2) -> int              -1, 0 or 1; exact for quantities of any size
+//	                                            (q1, q2: string, int or double)
+//
+// Policies that compare quantities against a limit should use quantityCompare:
+// it never overflows, so a huge value such as "10Pi" compares as larger, not
+// as a wrapped negative number.
 package celenv
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
+	"strconv"
 	"strings"
 
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/common/types"
 	"github.com/google/cel-go/common/types/ref"
 	"github.com/google/cel-go/ext"
+	"gopkg.in/inf.v0"
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/archit2501/admitly/internal/imageref"
@@ -102,6 +112,9 @@ func newEnvWithLimit(costLimit uint64) (*Env, error) {
 				cel.UnaryBinding(quantityMilli)),
 			cel.Overload("quantity_milli_double", []*cel.Type{cel.DoubleType}, cel.IntType,
 				cel.UnaryBinding(quantityMilli))),
+		cel.Function("quantityCompare",
+			cel.Overload("quantity_compare_dyn_dyn", []*cel.Type{cel.DynType, cel.DynType}, cel.IntType,
+				cel.BinaryBinding(quantityCompare))),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("building CEL environment: %w", err)
@@ -209,19 +222,61 @@ func matchesGlob(name, pattern ref.Val) ref.Val {
 	return types.Bool(imageref.MatchGlob(p, n))
 }
 
-func quantityMilli(v ref.Val) ref.Val {
+// toQuantity converts a CEL string, int or double into a Kubernetes quantity.
+// Doubles must be finite.
+func toQuantity(fn string, v ref.Val) (resource.Quantity, ref.Val) {
 	switch x := v.Value().(type) {
 	case int64:
-		return types.Int(x * 1000)
+		return *resource.NewQuantity(x, resource.DecimalSI), nil
 	case float64:
-		return types.Int(int64(x * 1000))
+		if math.IsNaN(x) || math.IsInf(x, 0) {
+			return resource.Quantity{}, types.NewErr("%s: non-finite quantity %v", fn, x)
+		}
+		q, err := resource.ParseQuantity(strconv.FormatFloat(x, 'g', -1, 64))
+		if err != nil {
+			return resource.Quantity{}, types.NewErr("%s: invalid quantity %v: %v", fn, x, err)
+		}
+		return q, nil
 	case string:
 		q, err := resource.ParseQuantity(x)
 		if err != nil {
-			return types.NewErr("quantityMilli: invalid quantity %q: %v", x, err)
+			return resource.Quantity{}, types.NewErr("%s: invalid quantity %q: %v", fn, x, err)
 		}
-		return types.Int(q.MilliValue())
+		return q, nil
 	default:
-		return types.NewErr("quantityMilli: unsupported type %s", v.Type().TypeName())
+		return resource.Quantity{}, types.NewErr("%s: unsupported type %s", fn, v.Type().TypeName())
 	}
+}
+
+var thousand = inf.NewDec(1000, 0)
+
+// quantityMilli returns the quantity in milli-units, rounded away from zero
+// like resource.Quantity.MilliValue. Unlike MilliValue it does not wrap
+// around on int64 overflow (MilliValue("10Pi") is negative): a value that does
+// not fit is an evaluation error, so the policy's failurePolicy decides.
+func quantityMilli(v ref.Val) ref.Val {
+	q, errVal := toQuantity("quantityMilli", v)
+	if errVal != nil {
+		return errVal
+	}
+	m := new(inf.Dec).Mul(q.AsDec(), thousand)
+	m.Round(m, 0, inf.RoundUp)
+	u, ok := m.Unscaled()
+	if !ok {
+		return types.NewErr("quantityMilli: quantity %s overflows int64 milli-units; use quantityCompare", q.String())
+	}
+	return types.Int(u)
+}
+
+// quantityCompare compares two quantities exactly (resource.Quantity.Cmp).
+func quantityCompare(a, b ref.Val) ref.Val {
+	qa, errVal := toQuantity("quantityCompare", a)
+	if errVal != nil {
+		return errVal
+	}
+	qb, errVal := toQuantity("quantityCompare", b)
+	if errVal != nil {
+		return errVal
+	}
+	return types.Int(qa.Cmp(qb))
 }

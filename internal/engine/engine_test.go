@@ -155,6 +155,15 @@ func TestBuiltinValidationMatrix(t *testing.T) {
 			map[string]string{"require-resource-limits": "containers must set cpu and memory limits: app"}},
 		{"over memory", admissionv1.Create, strings.Replace(goodPod, "256Mi", "8Gi", 1),
 			map[string]string{"require-resource-limits": "memory limit above 4Gi: app"}},
+		// Quantities whose milli-value overflows int64 must not wrap around
+		// to a negative number and slip under maxMemory.
+		{"over memory 10Pi", admissionv1.Create, strings.Replace(goodPod, "256Mi", "10Pi", 1),
+			map[string]string{"require-resource-limits": "memory limit above 4Gi: app"}},
+		{"over memory 9e18", admissionv1.Create, strings.Replace(goodPod, "256Mi", "\"9000000000000000000\"", 1),
+			map[string]string{"require-resource-limits": "memory limit above 4Gi: app"}},
+		{"over memory 8Ei", admissionv1.Create, strings.Replace(goodPod, "256Mi", "8Ei", 1),
+			map[string]string{"require-resource-limits": "memory limit above 4Gi: app"}},
+		{"memory exactly 4Gi", admissionv1.Create, strings.Replace(goodPod, "256Mi", "4Gi", 1), nil},
 		{"bad registry", admissionv1.Create, strings.Replace(goodPod, "registry.lab.local/", "docker.io/", 1),
 			map[string]string{"registry-allowlist": "images from unapproved registries: docker.io/team/web@"}},
 		{"lookalike registry", admissionv1.Create, strings.Replace(goodPod, "registry.lab.local/", "registry.lab.local.evil.io/", 1),

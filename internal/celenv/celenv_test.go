@@ -120,6 +120,73 @@ func TestRuntimeErrors(t *testing.T) {
 	}
 }
 
+// TestQuantityHugeValues pins the fix for a maxMemory bypass: MilliValue of
+// quantities above ~8Pi wraps to a negative int64, so "10Pi" compared as
+// smaller than "4Gi".
+func TestQuantityHugeValues(t *testing.T) {
+	e := newEnv(t, 0)
+	ok := []struct {
+		expr string
+		want bool
+	}{
+		{`quantityCompare("10Pi", "4Gi") == 1`, true},
+		{`quantityCompare("9000000000000000000", "4Gi") == 1`, true},
+		{`quantityCompare("8Ei", "4Gi") == 1`, true},
+		{`quantityCompare("1e300", "4Gi") == 1`, true},
+		{`quantityCompare("123456789012345678901234567890", "4Gi") == 1`, true},
+		{`quantityCompare("-10Pi", "4Gi") == -1`, true},
+		{`quantityCompare("4Gi", "4Gi") == 0`, true},
+		{`quantityCompare("4096Mi", "4Gi") == 0`, true},
+		{`quantityCompare("4Gi", "5Gi") == -1`, true},
+		{`quantityCompare("500m", 1) == -1`, true},
+		{`quantityCompare(2, 1.5) == 1`, true},
+		{`quantityCompare(1e300, "4Gi") == 1`, true},
+		{`quantityCompare(params.max, "2") == 0`, true},
+		{`quantityMilli("9223372036854775807m") == 9223372036854775807`, true},
+		{`quantityMilli("-9223372036854775808m") == -9223372036854775807 - 1`, true},
+		{`quantityMilli("1.0001m") == 2`, true},
+		{`quantityMilli("-1.5m") == -2`, true},
+		{`quantityMilli(9223372036854775) == 9223372036854775000`, true},
+	}
+	for _, tc := range ok {
+		p, err := e.Compile(tc.expr, BoolType)
+		if err != nil {
+			t.Errorf("Compile(%q): %v", tc.expr, err)
+			continue
+		}
+		got, err := p.EvalBool(context.Background(), baseActivation())
+		if err != nil || got != tc.want {
+			t.Errorf("Eval(%q) = %v, %v; want %v", tc.expr, got, err, tc.want)
+		}
+	}
+	for _, src := range []string{
+		`quantityMilli("10Pi") > 0`,
+		`quantityMilli("8Ei") > 0`,
+		`quantityMilli("9000000000000000000") > 0`,
+		`quantityMilli("9223372036854775808m") > 0`,
+		`quantityMilli("-10Pi") < 0`,
+		`quantityMilli("1e300") > 0`,
+		`quantityMilli(9223372036854776) > 0`,
+		`quantityMilli(-9223372036854776) < 0`,
+		`quantityMilli(1e300) > 0`,
+		`quantityMilli(-1e300) < 0`,
+		`quantityMilli(math.sqrt(-1.0)) > 0`,
+		`quantityMilli(1.0 / 0.0) > 0`,
+		`quantityCompare("12 apples", "1") == 0`,
+		`quantityCompare("1", "12 apples") == 0`,
+		`quantityCompare(true, "1") == 0`,
+		`quantityCompare(1.0 / 0.0, "1") == 0`,
+	} {
+		p, err := e.Compile(src, BoolType)
+		if err != nil {
+			t.Fatalf("Compile(%q): %v", src, err)
+		}
+		if got, err := p.EvalBool(context.Background(), baseActivation()); err == nil {
+			t.Errorf("Eval(%q) = %v, want error (no silent wrap-around)", src, got)
+		}
+	}
+}
+
 func TestCostLimit(t *testing.T) {
 	e := newEnv(t, 1000)
 	p, err := e.Compile(`lists.range(5000).all(i, i >= 0)`, BoolType)

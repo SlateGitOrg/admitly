@@ -1,5 +1,6 @@
 # Containers without limits can starve their neighbours; maxMemory caps a
-# single container's memory limit.
+# single container's memory limit. quantityCompare is exact for any size
+# (quantityMilli would overflow int64 for limits above ~8Pi).
 apiVersion: admitly.dev/v1alpha1
 kind: ValidationPolicy
 metadata:
@@ -34,7 +35,7 @@ spec:
         !has(params.maxMemory) ? [] :
         variables.workloadContainers.filter(c,
           'memory' in c.?resources.?limits.orValue({}) &&
-          quantityMilli(c.resources.limits.memory) > quantityMilli(params.maxMemory)).map(c, c.name)
+          quantityCompare(c.resources.limits.memory, params.maxMemory) > 0).map(c, c.name)
   validations:
     - expression: size(variables.noLimits) == 0
       messageExpression: >-
