@@ -60,7 +60,7 @@ var ErrCompile = errors.New("cel compile error")
 // Env is an immutable, shareable CEL environment.
 type Env struct {
 	env       *cel.Env
-	costLimit uint64
+	costLimit uint64 // 0 disables cost tracking (benchmarks only)
 }
 
 // New returns the admitly CEL environment. costLimit 0 selects DefaultCostLimit.
@@ -68,6 +68,10 @@ func New(costLimit uint64) (*Env, error) {
 	if costLimit == 0 {
 		costLimit = DefaultCostLimit
 	}
+	return newEnvWithLimit(costLimit)
+}
+
+func newEnvWithLimit(costLimit uint64) (*Env, error) {
 	env, err := cel.NewEnv(
 		cel.Variable(VarObject, cel.DynType),
 		cel.Variable(VarOldObject, cel.DynType),
@@ -125,11 +129,11 @@ func (e *Env) Compile(src string, want *cel.Type) (*Program, error) {
 	if want != cel.DynType && out != cel.DynType && !want.IsAssignableType(out) {
 		return nil, fmt.Errorf("%w: expression must evaluate to %s, got %s", ErrCompile, want, out)
 	}
-	prg, err := e.env.Program(ast,
-		cel.CostLimit(e.costLimit),
-		cel.InterruptCheckFrequency(100),
-		cel.EvalOptions(cel.OptOptimize),
-	)
+	opts := []cel.ProgramOption{cel.InterruptCheckFrequency(100), cel.EvalOptions(cel.OptOptimize)}
+	if e.costLimit > 0 {
+		opts = append(opts, cel.CostLimit(e.costLimit))
+	}
+	prg, err := e.env.Program(ast, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrCompile, err)
 	}
