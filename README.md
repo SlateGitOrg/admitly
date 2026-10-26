@@ -66,7 +66,7 @@ flowchart LR
 
 Deeper design, algorithms and complexity: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 Threats and failure modes: [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
-Rulings and trade-offs: [DECISIONS.md](DECISIONS.md).
+Design decisions and trade-offs: [DECISIONS.md](DECISIONS.md).
 
 ## Quickstart
 
